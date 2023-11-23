@@ -1,5 +1,7 @@
 package com.example.goodsapp.ui.item
 
+import android.content.Context
+import android.content.Intent
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,13 +34,16 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.goodsapp.R
 import com.example.goodsapp.InventoryTopAppBar
+import com.example.goodsapp.R
 import com.example.goodsapp.data.Item
 import com.example.goodsapp.ui.AppViewModelProvider
 import com.example.goodsapp.ui.navigation.NavigationDestination
@@ -49,6 +55,13 @@ object ItemDetailsDestination : NavigationDestination {
     override val titleRes = R.string.item_detail_title
     const val itemIdArg = "itemId"
     val routeWithArgs = "$route/{$itemIdArg}"
+}
+
+private fun share(context: Context, value: String) {
+    val sharingIntent = Intent(Intent.ACTION_SEND)
+    sharingIntent.type = "text/plain"
+    sharingIntent.putExtra(Intent.EXTRA_TEXT, value)
+    startActivity(context, Intent.createChooser(sharingIntent, null),null)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -110,7 +123,7 @@ private fun ItemDetailsBody(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
         var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
-
+        val context = LocalContext.current
         ItemDetails(
             item = itemDetailsUiState.itemDetails.toItem(),
             modifier = Modifier.fillMaxWidth()
@@ -123,6 +136,18 @@ private fun ItemDetailsBody(
         ) {
             Text(stringResource(R.string.sell))
         }
+        Button(
+            onClick = { share(context, itemDetailsUiState.itemDetails.toFormattedString()) },
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.small,
+            colors = ButtonDefaults.buttonColors(
+                contentColor = Color.White,
+                containerColor = Color.Gray
+            )
+        ) {
+            Text(stringResource(R.string.share))
+        }
+        Spacer(Modifier.weight(1f))
         OutlinedButton(
             onClick = { deleteConfirmationRequired = true },
             shape = MaterialTheme.shapes.small,

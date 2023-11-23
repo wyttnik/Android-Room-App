@@ -10,8 +10,15 @@ import androidx.compose.ui.Modifier
 import com.example.goodsapp.ui.theme.InventoryTheme
 
 class MainActivity : ComponentActivity() {
+
+    private lateinit var sharingShortcutsManager: SharingShortcutsManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        sharingShortcutsManager = SharingShortcutsManager().also {
+//            it.removeAllDirectShareTargets(this)
+            it.pushDirectShareTargets(this)
+        }
+
         setContent {
             InventoryTheme {
                 // A surface container using the 'background' color from the theme

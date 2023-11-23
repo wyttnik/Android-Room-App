@@ -85,6 +85,17 @@ fun ItemDetails.toItem(): Item = Item(
     phone = phone
 )
 
+fun ItemDetails.toFormattedString(): String {
+    return "Item Info:\n" +
+            "  Item                            $name\n" +
+            "  Quantity in stock      $quantity\n" +
+            "  Price                           ${NumberFormat.getCurrencyInstance().format(price.toDoubleOrNull() ?: 0.0)}\n" +
+            "Vendor Info:\n" +
+            "  Name                         $vendorName\n" +
+            "  Email                          $email\n" +
+            "  Phone                        $phone\n"
+}
+
 fun Item.formatedPrice(): String {
     return NumberFormat.getCurrencyInstance().format(price)
 }
