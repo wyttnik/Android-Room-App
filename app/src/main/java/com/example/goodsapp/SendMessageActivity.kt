@@ -40,7 +40,7 @@ class SendMessageActivity: ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            SendScreen(viewModel.messageState, ::send)
+            SendScreen(viewModel.messageState, ::send, viewModel::updateMessageState)
         }
 
         val handled = handleIntent(intent)

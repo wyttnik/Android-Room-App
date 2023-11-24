@@ -26,8 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.goodsapp.R
 import com.example.goodsapp.InventoryTopAppBar
+import com.example.goodsapp.R
 import com.example.goodsapp.ui.AppViewModelProvider
 import com.example.goodsapp.ui.navigation.NavigationDestination
 import com.example.goodsapp.ui.theme.InventoryTheme

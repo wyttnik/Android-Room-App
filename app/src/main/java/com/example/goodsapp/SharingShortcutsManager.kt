@@ -59,10 +59,6 @@ class SharingShortcutsManager {
             staticLauncherShortcutIntent.setPackage("com.example.goodsapp")
             staticLauncherShortcutIntent.putExtra(Contact.id, id)
 
-            val mainActivityIntent = Intent(Intent.ACTION_MAIN)
-            mainActivityIntent.setPackage("com.example.goodsapp")
-            mainActivityIntent.setClass(context,MainActivity::class.java)
-
             // Creates a new Sharing Shortcut and adds it to the list
             // The id passed in the constructor will become EXTRA_SHORTCUT_ID in the received Intent
             shortcuts.add(
@@ -70,7 +66,7 @@ class SharingShortcutsManager {
                             .setShortLabel(contact.name)
                             // Icon that will be displayed in the share target
                             .setIcon(IconCompat.createWithResource(context, contact.icon))
-                            .setIntents(arrayOf(mainActivityIntent, staticLauncherShortcutIntent))
+                            .setIntent(staticLauncherShortcutIntent)
                             // Make this sharing shortcut cached by the system
                             // Even if it is unpublished, it can still appear on the sharesheet
                             .setLongLived(true)
