@@ -1,5 +1,9 @@
 package com.example.goodsapp.ui.item
 
+import android.app.Activity
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -21,6 +25,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -28,10 +33,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.goodsapp.InventoryTopAppBar
 import com.example.goodsapp.R
+import com.example.goodsapp.data.CreationType
+import com.example.goodsapp.security.SecurityViewModel
+import com.example.goodsapp.security.SettingsDetails
+import com.example.goodsapp.security.SettingsUiState
 import com.example.goodsapp.ui.AppViewModelProvider
 import com.example.goodsapp.ui.navigation.NavigationDestination
 import com.example.goodsapp.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
+import java.io.File
+import java.io.FileInputStream
 import java.util.Currency
 import java.util.Locale
 
@@ -48,20 +60,67 @@ fun ItemEntryScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     canNavigateBack: Boolean = true,
-    viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    settingsViewModel: SecurityViewModel
 ) {
+    var entryCheck by rememberSaveable{ mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val resultLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts
+        .StartActivityForResult()){result->
+        if (result.resultCode == Activity.RESULT_OK) {
+            result.data?.data?.also {uri ->
+                val cacheFile = File(context.cacheDir, "temp.json")
+
+                cacheFile.outputStream().use {output->
+                    context.contentResolver.openFileDescriptor(uri,"r")?.use {descriptor->
+                        FileInputStream(descriptor.fileDescriptor).use { input->
+                            input.copyTo(output)
+                            input.close()
+                        }
+                    }
+                    output.close()
+                }
+
+                val encryptedFile = settingsViewModel.encryptFile(cacheFile)
+                encryptedFile.openFileInput().use {input->
+                    val receivedDetails = Json.decodeFromString<ItemDetails>(input.bufferedReader().readText())
+                    receivedDetails.type = CreationType.FILE
+                    viewModel.updateUiState(
+                        receivedDetails
+                    )
+                    input.close()
+                }
+
+                cacheFile.delete()
+            }
+        }
+    }
     Scaffold(
         topBar = {
             InventoryTopAppBar(
                 title = stringResource(ItemEntryDestination.titleRes),
                 canNavigateBack = canNavigateBack,
-                navigateUp = onNavigateUp
+                navigateUp = onNavigateUp,
+                viewModel = settingsViewModel,
+                isEntryScreen = true,
+                intentResultLauncher = resultLauncher
             )
         }
     ) { innerPadding ->
         ItemEntryBody(
-            itemUiState = viewModel.itemUiState,
+            itemUiState = viewModel.itemUiState.apply {
+                if(!entryCheck && settingsViewModel.settingsUiState.settingsDetails.enterDefaults) {
+                    entryCheck = true
+                    val settingsDetails = settingsViewModel.settingsUiState.settingsDetails
+                    viewModel.updateUiState(ItemDetails(
+                        vendorName = settingsDetails.vendorName,
+                        email = settingsDetails.email,
+                        phone = settingsDetails.phone
+                    ))
+                }
+            },
             onItemValueChange = viewModel::updateUiState,
             onSaveClick = {
                 coroutineScope.launch {
@@ -77,7 +136,8 @@ fun ItemEntryScreen(
             modifier = Modifier
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            settingsUiState = settingsViewModel.settingsUiState
         )
     }
 }
@@ -88,7 +148,8 @@ fun ItemEntryBody(
     onItemValueChange: (ItemDetails) -> Unit,
     onSaveClick: () -> Unit,
     modifier: Modifier = Modifier,
-    validators: Map<String, (String) -> Boolean>
+    validators: Map<String, (String) -> Boolean>,
+    settingsUiState: SettingsUiState
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large)),
@@ -98,7 +159,8 @@ fun ItemEntryBody(
             itemDetails = itemUiState.itemDetails,
             onValueChange = onItemValueChange,
             validators = validators,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            settings = settingsUiState.settingsDetails
         )
         Button(
             onClick = onSaveClick,
@@ -112,14 +174,14 @@ fun ItemEntryBody(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemInputForm(
     itemDetails: ItemDetails,
     modifier: Modifier = Modifier,
     onValueChange: (ItemDetails) -> Unit = {},
     enabled: Boolean = true,
-    validators: Map<String, (String) -> Boolean>
+    validators: Map<String, (String) -> Boolean>,
+    settings: SettingsDetails
 ) {
     var quantityError by rememberSaveable{ mutableStateOf(false) }
     var priceError by rememberSaveable{ mutableStateOf(false) }
@@ -309,6 +371,7 @@ private fun ItemEntryScreenPreview() {
                 "quantityValidator" to {false},
                 "nameValidator" to {false},
                 "emailValidator" to {false},
-                "phoneValidator" to {false}))
+                "phoneValidator" to {false}),
+            settingsUiState = SettingsUiState())
     }
 }

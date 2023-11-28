@@ -9,9 +9,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.goodsapp.ui.theme.InventoryTheme
 
+
 class MainActivity : ComponentActivity() {
 
     private lateinit var sharingShortcutsManager: SharingShortcutsManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         sharingShortcutsManager = SharingShortcutsManager().also {

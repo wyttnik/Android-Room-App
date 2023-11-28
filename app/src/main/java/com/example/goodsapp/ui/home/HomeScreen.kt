@@ -27,6 +27,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -37,7 +38,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.goodsapp.InventoryTopAppBar
 import com.example.goodsapp.R
+import com.example.goodsapp.data.CreationType
 import com.example.goodsapp.data.Item
+import com.example.goodsapp.security.SecurityViewModel
+import com.example.goodsapp.security.SettingsDetails
 import com.example.goodsapp.ui.AppViewModelProvider
 import com.example.goodsapp.ui.item.formatedPrice
 import com.example.goodsapp.ui.navigation.NavigationDestination
@@ -57,8 +61,10 @@ object HomeDestination : NavigationDestination {
 fun HomeScreen(
     navigateToItemEntry: () -> Unit,
     navigateToItemUpdate: (Int) -> Unit,
+    navigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    settingsViewModel: SecurityViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val homeUiState by viewModel.homeUiState.collectAsState()
@@ -68,7 +74,10 @@ fun HomeScreen(
             InventoryTopAppBar(
                 title = stringResource(HomeDestination.titleRes),
                 canNavigateBack = false,
-                scrollBehavior = scrollBehavior
+                scrollBehavior = scrollBehavior,
+                isMainScreen = true,
+                onSettingsClick = navigateToSettings,
+                viewModel = settingsViewModel
             )
         },
         floatingActionButton = {
@@ -89,14 +98,16 @@ fun HomeScreen(
             onItemClick = navigateToItemUpdate,
             modifier = Modifier
                 .padding(innerPadding)
-                .fillMaxSize()
+                .fillMaxSize(),
+            settings = settingsViewModel.settingsUiState.settingsDetails
         )
     }
 }
 
 @Composable
 private fun HomeBody(
-    itemList: List<Item>, onItemClick: (Int) -> Unit, modifier: Modifier = Modifier
+    itemList: List<Item>, onItemClick: (Int) -> Unit, modifier: Modifier = Modifier,
+    settings: SettingsDetails
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -112,7 +123,8 @@ private fun HomeBody(
             InventoryList(
                 itemList = itemList,
                 onItemClick = { onItemClick(it.id) },
-                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small))
+                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.padding_small)),
+                settings = settings
             )
         }
     }
@@ -120,21 +132,23 @@ private fun HomeBody(
 
 @Composable
 private fun InventoryList(
-    itemList: List<Item>, onItemClick: (Item) -> Unit, modifier: Modifier = Modifier
+    itemList: List<Item>, onItemClick: (Item) -> Unit, modifier: Modifier = Modifier,
+    settings: SettingsDetails
 ) {
     LazyColumn(modifier = modifier) {
         items(items = itemList, key = { it.id }) { item ->
             InventoryItem(item = item,
                 modifier = Modifier
                     .padding(dimensionResource(id = R.dimen.padding_small))
-                    .clickable { onItemClick(item) })
+                    .clickable { onItemClick(item) },
+                settings = settings)
         }
     }
 }
 
 @Composable
 private fun InventoryItem(
-    item: Item, modifier: Modifier = Modifier
+    item: Item, modifier: Modifier = Modifier, settings: SettingsDetails
 ) {
     Card(
         modifier = modifier,
@@ -168,7 +182,12 @@ private fun InventoryItem(
                 Text(
                     text = "Vendor: ${item.vendorName}",
                     style = MaterialTheme.typography.titleMedium,
-                    fontStyle = FontStyle.Italic
+                    fontStyle = FontStyle.Italic,
+                    modifier = if (settings.hideInfo) {
+                        Modifier.blur(10.dp)
+                    } else {
+                        Modifier
+                    }
                 )
             }
 
@@ -181,10 +200,11 @@ private fun InventoryItem(
 fun HomeBodyPreview() {
     InventoryTheme {
         HomeBody(listOf(
-            Item(1, "Game", 100.0, 20, "Nintendo", "aa@mail.com", "+12312312311"),
-            Item(2, "Pen", 200.0, 30,"Pentendo", "aa@mail.com", "+12312312311"),
-            Item(3, "TV", 300.0, 50,"Panasonic", "aa@mail.com", "+12312312311")
-        ), onItemClick = {})
+            Item(1, "Game", 100.0, 20, "Nintendo", "aa@mail.com", "+12312312311", CreationType.MANUAL),
+            Item(2, "Pen", 200.0, 30,"Pentendo", "aa@mail.com", "+12312312311", CreationType.MANUAL),
+            Item(3, "TV", 300.0, 50,"Panasonic", "aa@mail.com", "+12312312311", CreationType.MANUAL)
+        ), onItemClick = {}, settings = SettingsDetails()
+        )
     }
 }
 
@@ -192,7 +212,7 @@ fun HomeBodyPreview() {
 @Composable
 fun HomeBodyEmptyListPreview() {
     InventoryTheme {
-        HomeBody(listOf(), onItemClick = {})
+        HomeBody(listOf(), onItemClick = {}, settings = SettingsDetails())
     }
 }
 
@@ -201,7 +221,8 @@ fun HomeBodyEmptyListPreview() {
 fun InventoryItemPreview() {
     InventoryTheme {
         InventoryItem(
-            Item(1, "Game", 100.0, 20,"Nintendo", "aa@mail.com", "+12312312311"),
+            Item(1, "Game", 100.0, 20,"Nintendo", "aa@mail.com", "+12312312311",CreationType.MANUAL),
+            settings = SettingsDetails()
         )
     }
 }

@@ -4,8 +4,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.example.goodsapp.data.CreationType
 import com.example.goodsapp.data.Item
 import com.example.goodsapp.data.ItemsRepository
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 import java.text.NumberFormat
 
 /**
@@ -60,14 +63,16 @@ data class ItemUiState(
     val isEntryValid: Boolean = false
 )
 
+@Serializable
 data class ItemDetails(
-    val id: Int = 0,
+    @Transient val id: Int = 0,
     val name: String = "",
     val price: String = "",
     val quantity: String = "",
     val vendorName: String = "",
     val email: String = "",
-    val phone: String = ""
+    val phone: String = "",
+    @Transient var type: CreationType = CreationType.MANUAL
 )
 
 /**
@@ -82,7 +87,8 @@ fun ItemDetails.toItem(): Item = Item(
     quantity = quantity.toIntOrNull() ?: 0,
     vendorName = vendorName,
     email = email,
-    phone = phone
+    phone = phone,
+    type = type
 )
 
 fun ItemDetails.toFormattedString(): String {
@@ -118,5 +124,6 @@ fun Item.toItemDetails(): ItemDetails = ItemDetails(
     quantity = quantity.toString(),
     vendorName = vendorName,
     email = email,
-    phone = phone
+    phone = phone,
+    type = type
 )

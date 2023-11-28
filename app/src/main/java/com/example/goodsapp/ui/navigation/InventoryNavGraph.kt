@@ -7,6 +7,9 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.example.goodsapp.security.SecurityViewModel
+import com.example.goodsapp.security.SettingsDestination
+import com.example.goodsapp.security.SettingsScreen
 import com.example.goodsapp.ui.home.HomeDestination
 import com.example.goodsapp.ui.home.HomeScreen
 import com.example.goodsapp.ui.item.ItemDetailsDestination
@@ -23,6 +26,7 @@ import com.example.goodsapp.ui.item.ItemEntryScreen
 fun InventoryNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    securityManager: SecurityViewModel
 ) {
     NavHost(
         navController = navController,
@@ -34,13 +38,23 @@ fun InventoryNavHost(
                 navigateToItemEntry = { navController.navigate(ItemEntryDestination.route) },
                 navigateToItemUpdate = {
                     navController.navigate("${ItemDetailsDestination.route}/${it}")
-                }
+                },
+                navigateToSettings = { navController.navigate(SettingsDestination.route) },
+                settingsViewModel = securityManager
+            )
+        }
+        composable(route = SettingsDestination.route) {
+            SettingsScreen(
+                onNavigateUp = { navController.navigateUp() },
+                viewModel = securityManager,
+                navigateBack = { navController.popBackStack() }
             )
         }
         composable(route = ItemEntryDestination.route) {
             ItemEntryScreen(
                 navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() }
+                onNavigateUp = { navController.navigateUp() },
+                settingsViewModel = securityManager
             )
         }
         composable(
@@ -51,7 +65,8 @@ fun InventoryNavHost(
         ) {
             ItemDetailsScreen(
                 navigateToEditItem = { navController.navigate("${ItemEditDestination.route}/$it") },
-                navigateBack = { navController.navigateUp() }
+                navigateBack = { navController.navigateUp() },
+                settingsViewModel = securityManager
             )
         }
         composable(
@@ -62,7 +77,8 @@ fun InventoryNavHost(
         ) {
             ItemEditScreen(
                 navigateBack = { navController.popBackStack() },
-                onNavigateUp = { navController.navigateUp() }
+                onNavigateUp = { navController.navigateUp() },
+                settingsViewModel = securityManager
             )
         }
     }

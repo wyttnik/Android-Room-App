@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.goodsapp.InventoryApplication
+import com.example.goodsapp.security.SecurityViewModel
 import com.example.goodsapp.ui.home.HomeViewModel
 import com.example.goodsapp.ui.item.ItemDetailsViewModel
 import com.example.goodsapp.ui.item.ItemEditViewModel
@@ -40,6 +41,10 @@ object AppViewModelProvider {
         // Initializer for HomeViewModel
         initializer {
             HomeViewModel(inventoryApplication().container.itemsRepository)
+        }
+
+        initializer {
+            SecurityViewModel(inventoryApplication())
         }
     }
 }

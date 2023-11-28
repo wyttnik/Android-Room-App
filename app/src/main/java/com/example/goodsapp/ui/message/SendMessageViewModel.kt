@@ -1,5 +1,6 @@
 package com.example.goodsapp.ui.message
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,6 +13,8 @@ class SendMessageViewModel : ViewModel() {
     fun updateMessageState(name:String, message: String) {
         messageState = MessageState(name, message)
     }
+
+
 }
 
 data class MessageState(

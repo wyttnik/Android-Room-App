@@ -10,13 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.goodsapp.InventoryTopAppBar
 import com.example.goodsapp.R
+import com.example.goodsapp.security.SecurityViewModel
 import com.example.goodsapp.ui.AppViewModelProvider
 import com.example.goodsapp.ui.navigation.NavigationDestination
-import com.example.goodsapp.ui.theme.InventoryTheme
 import kotlinx.coroutines.launch
 
 object ItemEditDestination : NavigationDestination {
@@ -32,7 +31,8 @@ fun ItemEditScreen(
     navigateBack: () -> Unit,
     onNavigateUp: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ItemEditViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: ItemEditViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    settingsViewModel: SecurityViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
@@ -40,7 +40,8 @@ fun ItemEditScreen(
             InventoryTopAppBar(
                 title = stringResource(ItemEditDestination.titleRes),
                 canNavigateBack = true,
-                navigateUp = onNavigateUp
+                navigateUp = onNavigateUp,
+                viewModel = settingsViewModel
             )
         },
         modifier = modifier
@@ -59,15 +60,8 @@ fun ItemEditScreen(
                 "phoneValidator" to viewModel::phoneValidator),
             modifier = Modifier.padding(innerPadding)
                 .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            settingsUiState = settingsViewModel.settingsUiState
         )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ItemEditScreenPreview() {
-    InventoryTheme {
-        ItemEditScreen(navigateBack = { /*Do nothing*/ }, onNavigateUp = { /*Do nothing*/ })
     }
 }
