@@ -1,6 +1,7 @@
 package com.example.goodsapp.data
 
 import android.content.Context
+import androidx.security.crypto.MasterKey
 
 /**
  * App container for Dependency injection.
@@ -13,6 +14,7 @@ interface AppContainer {
  * [AppContainer] implementation that provides instance of [OfflineItemsRepository]
  */
 class AppDataContainer(private val context: Context) : AppContainer {
+
     /**
      * Implementation for [ItemsRepository]
      */

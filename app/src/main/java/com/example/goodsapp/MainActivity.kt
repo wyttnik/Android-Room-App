@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
+import com.example.goodsapp.security.MasterFiles
 import com.example.goodsapp.ui.theme.InventoryTheme
 
 
@@ -16,6 +17,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MasterFiles.initialize(application)
         sharingShortcutsManager = SharingShortcutsManager().also {
 //            it.removeAllDirectShareTargets(this)
             it.pushDirectShareTargets(this)

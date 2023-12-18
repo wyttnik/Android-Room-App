@@ -5,6 +5,9 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven {
+            url = java.net.URI("https://s3.amazonaws.com/repo.commonsware.com")
+        }
     }
 }
 dependencyResolutionManagement {
@@ -12,6 +15,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven {
+            url  = java.net.URI("https://s3.amazonaws.com/repo.commonsware.com")
+        }
     }
 }
 

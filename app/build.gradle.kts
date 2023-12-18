@@ -13,7 +13,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.goodsapp"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
@@ -75,6 +75,10 @@ dependencies {
     implementation("androidx.room:room-runtime:${rootProject.extra["room_version"]}")
     ksp("androidx.room:room-compiler:${rootProject.extra["room_version"]}")
     implementation("androidx.room:room-ktx:${rootProject.extra["room_version"]}")
+
+    implementation("net.zetetic:android-database-sqlcipher:4.5.0")
+    implementation("com.commonsware.cwac:saferoom.x:1.3.0")
+    implementation ("androidx.sqlite:sqlite:2.2.0")
 
     implementation("androidx.core:core-ktx:1.7.0")
     implementation("androidx.sharetarget:sharetarget:1.2.0-rc01")

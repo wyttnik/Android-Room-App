@@ -6,25 +6,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.security.crypto.EncryptedFile
-import androidx.security.crypto.EncryptedSharedPreferences
-import androidx.security.crypto.MasterKey
+import com.example.goodsapp.security.MasterFiles.encryptedSharedPreferences
 import java.io.File
 
 class SecurityViewModel(private val application: Application): AndroidViewModel(application) {
-    private val mainKey = MasterKey.Builder(application).setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
-        .build()
 
-    private val encryptedSharedPreferences = EncryptedSharedPreferences.create(
-        application,
-        "secret_shared_prefs",
-        mainKey,
-        EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
-        EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
-    )
-
-    init {
-        defaultSettingValues()
-    }
+//    val advancedSpec = KeyGenParameterSpec.Builder("test_and_del_key",
+//        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT).apply {
+//        setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+//        setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+//        setKeySize(256)
+//        setUserAuthenticationRequired(true)
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+//            setUserAuthenticationParameters(15, KeyProperties.AUTH_DEVICE_CREDENTIAL
+//                    or KeyProperties.AUTH_BIOMETRIC_STRONG)
+//            setUnlockedDeviceRequired(true)
+//            setIsStrongBoxBacked(true)
+//        }
+//    }.build()
 
     var settingsUiState by mutableStateOf(SettingsUiState(SettingsDetails(
         vendorName = encryptedSharedPreferences.getString("vendorName_default", "No name")!!,
@@ -36,23 +35,10 @@ class SecurityViewModel(private val application: Application): AndroidViewModel(
         true))
         private set
 
-    private fun defaultSettingValues() {
-        if (encryptedSharedPreferences.contains("vendorName_default")) return
-
-        val editor = encryptedSharedPreferences.edit()
-
-        editor.putString("vendorName_default", "Default Name").apply()
-        editor.putString("email_default", "example@ex.com").apply()
-        editor.putString("phone_default", "+71234567890").apply()
-        editor.putBoolean("enter_defaults", false).apply()
-        editor.putBoolean("hide_info", false).apply()
-        editor.putBoolean("restrict_share", false).apply()
-    }
-
     fun encryptFile(file: File) = EncryptedFile.Builder(
         application,
         file,
-        mainKey,
+        MasterFiles.mainKey,
         EncryptedFile.FileEncryptionScheme.AES256_GCM_HKDF_4KB
     ).build()
 
